@@ -1,0 +1,34 @@
+# Set Working Directory and Source Required Files
+setwd("c:/data/BUAN6356/HW_2")
+source("prep.txt", echo = T)
+
+# Load the Boston Housing Data
+library(MASS)
+
+
+data(Boston)
+
+# Prepare Data for Analysis
+wk <- Boston[, names(Boston) != "black"]
+wk <- na.omit(wk)
+
+# Set Random Number Seed and Create Testing Sample
+seed <-567398937
+set.seed(seed)
+tNum <- ceiling(0.10 * nrow(wk))
+tst <- sample(nrow(wk), tNum)
+
+# Build Baseline Linear Model
+baseline_model <- lm(medv ~ ., data = wk[-tst, ])
+predBase <- predict(baseline_model, newdata = wk[-tst, ])
+
+# Refine the Model via Stepwise Regression
+stepwise_model <- step(baseline_model)
+predStep <- predict(stepwise_model, wk[-tst, ])
+
+# Evaluate the Model on Testing Data
+tstPredS <- predict(stepwise_model, wk[tst, ])
+
+# Source Validation Script
+source("validate.txt", echo = TRUE)
+

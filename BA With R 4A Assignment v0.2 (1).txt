@@ -1,0 +1,57 @@
+# Set the working directory and source necessary files
+setwd("c:/data/BUAN6356/HW_4")
+source("prep.txt", echo = TRUE)  # Make sure prep.txt contains any required setup
+
+# Load the required packages
+if (!require("data.table")) {
+  install.packages("data.table")  # Install the package if not already installed
+  library("data.table")  # Load the package
+}
+
+if (!require("partykit")) {
+  install.packages("partykit")  # Install the package if not already installed
+  library("partykit")  # Load the package
+}
+
+# Set the random number seed
+seed <- 646609930
+set.seed(seed)
+
+# Import the data using data.table::fread
+raw <- fread("student_default_ISLR.csv")
+
+# Create the testing set (10% of the data)
+nTst <- round(0.1 * nrow(raw))
+tstFrac <- nTst / nrow(raw)
+tst <- sample(seq_len(nrow(raw)), size = nTst, replace = FALSE)
+
+# Create a data.table with "default" as an indicator and "student" as a factor
+wk <- copy(raw)
+wk[, default := as.numeric(default == "Yes")]
+wk[, student := as.factor(student)]
+
+# Fit a logistic model using all variables (no interactions) on the training set
+lBase <- glm(default ~ ., data = wk[!tst], family = "binomial")
+
+# Generate predictions and classifications for the testing set
+lBaseTst <- predict(lBase, newdata = wk[tst], type = "response")
+# Set a membership cutoff threshold
+mbrCutoff <- 0.5
+lBaseTstCls <- ifelse(lBaseTst > mbrCutoff, 1, 0)
+
+
+
+# Fit a ctree() model using all variables on the training set
+tBase <- ctree(default ~ ., data = wk[!tst])
+
+# Generate predictions and classifications for the testing set
+tBaseTst <- predict(tBase, newdata = wk[tst])
+
+# Extract the ctree() model classifications from the predictions
+tBaseTstCls <- ifelse(tBaseTst > mbrCutoff, 1, 0)
+
+
+
+# Finally, source the validation script
+source("validate.txt", echo = TRUE)
+

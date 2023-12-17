@@ -1,0 +1,41 @@
+
+setwd("c:/data/BUAN6356/HW_5"); 
+source("prep.txt", echo=T)
+require("data.table")
+
+# 1.seed
+seed <- 427409920   
+
+# 2. minClust
+minClust <- 1       
+
+# 3. maxClust
+maxClust <- 10    
+
+# 4. nst 
+nst <- 5        
+
+# 5. wk
+wk <- as.data.frame(fread(file="HW_5.csv"))     
+sca <- data.frame(scale(wk,center = TRUE , scale = TRUE)) 
+
+# 6. kWSS
+kWSS <- rep(-1,maxClust)          
+for (k in minClust:maxClust) {
+  set.seed(seed)
+  kWSS[k] <- kmeans(sca , k , nstart=nst)$tot.withinss
+}
+
+# 7. hWSS
+hc <- hclust(dist(sca)^2)
+hWSS <- rep(-1,maxClust)
+for (k in minClust:maxClust) {
+  dt    <- data.table(idx=1:nrow(sca), grp=cutree(hc,k))         
+  # control structure
+  wss   <- dt[,sum(scale(sca[idx,],center=T,scale=F)^2), by=grp] 
+  # split apply combine
+  hWSS[k] <- sum(wss$V1)
+}
+
+source("validate.txt", echo=T)
+

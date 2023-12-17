@@ -1,0 +1,27 @@
+# Set the working directory
+setwd("c:/data/BUAN6356/HW_3")
+source("prep.txt", echo=T)
+
+# Load the necessary packages
+if (!require(data.table)) {
+  install.packages("data.table")  # Install the package if not already installed
+  library(data.table)  # Load the package
+}
+
+# Load the data into a data.table using read.table
+raw <- as.data.table(read.table("dobson_covariance_6_12_mod.txt", header = TRUE, sep = ","))
+
+
+
+# Explore the data
+#head(raw)        # View the first few rows of the data
+#summary(raw)     # Summary statistics for numeric variables
+#str(raw)         # Structure of the data (column names, data types)
+
+# Fit a NULL model (intercept-only)
+m0 <- lm(achievement ~ 1, data = raw)
+
+# Get predicted values for the NULL model
+m0Pred <- predict(m0)
+source("validate.txt", echo=T)
+
